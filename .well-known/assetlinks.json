@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.testecustomtabs",
+      "sha256_cert_fingerprints": [
+        "B5:46:8A:CA:71:65:7E:CD:9F:66:7A:A4:1B:7B:3C:68:5A:43:D5:FE:02:45:77:E0:C2:0B:06:50:C2:26:D7:BA"
+      ]
+    }
+  }
+]

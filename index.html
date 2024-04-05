@@ -162,7 +162,7 @@
         }
 
         const canvas_label = document.getElementById("canvas_label");
-        canvas_label.textContent = `${canvas.width}x${canvas.height}T${T}`;
+        canvas_label.textContent = `${canvas.width}x${canvas.height}t${t}`;
       }
 
       document.addEventListener("DOMContentLoaded", updateCanvasSize);
@@ -296,6 +296,8 @@
             canvas.height,
             canvasFlipXY
           );
+
+          console.log({ width, height, data, labelType });
           setAsyncResponse(
             niimbotPrintImage(width, height, data, 1, labelType),
             "PRINT"

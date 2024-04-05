@@ -16,6 +16,7 @@
     </style>
   </head>
   <body>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator/qrcode.js"></script>
     <button onclick="fullscreen()">FULLSCREEN!!!!</button>
     <p>
       <button id="connect">Connect</button>
@@ -115,21 +116,19 @@
           }
         }
       }
-      // function goFullscreen() {
-      //   var elem = document.documentElement;
-      //   if (elem.requestFullscreen) {
-      //     elem.requestFullscreen();
-      //   } else if (elem.mozRequestFullScreen) {
-      //     /* Firefox */
-      //     elem.mozRequestFullScreen();
-      //   } else if (elem.webkitRequestFullscreen) {
-      //     /* Chrome, Safari and Opera */
-      //     elem.webkitRequestFullscreen();
-      //   } else if (elem.msRequestFullscreen) {
-      //     /* IE/Edge */
-      //     elem.msRequestFullscreen();
-      //   }
-      // }
+
+      function generateQRCode(text, size = 256) {
+        const qr = new QRCode(0, QRCode.ErrorCorrectLevel.H);
+        qr.addData(text);
+        qr.make();
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        qr.renderTo2dContext(ctx, size, size);
+        return canvas;
+      }
+
       function updateConnected(deviceName = null) {
         for (let el of document.getElementsByClassName("on_connected")) {
           el.disabled = !deviceName;
@@ -293,6 +292,13 @@
         context.fillStyle = color;
         context.fillText(text, x, y);
       }
+
+      function addQRCodeToCanvas(qrText) {
+        const qrCodeCanvas = generateQRCode(qrText, 256);
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(qrCodeCanvas, 50, 50); // Exemplo de coordenadas (50, 50)
+      }
       document
         .getElementById("save_canvas")
         .addEventListener("click", function () {
@@ -308,6 +314,8 @@
           const nomePaciente = document.getElementById("nomePaciente").value;
 
           addTextToCanvas(canvas, nomePaciente, 10, 20);
+
+          addQRCodeToCanvas("https://exemplo.com");
 
           let [data, width, height] = canvasGetImageData(
             canvas,

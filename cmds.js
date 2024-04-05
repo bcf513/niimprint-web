@@ -25,21 +25,20 @@ const CMD_GET_PRINT_STATUS = 163; // 0xA3
 const CMD_IMAGE_SET = 131; // 0x83
 const CMD_IMAGE_CLEAR = 132;
 const CMD_IMAGE_DATA = 133; // 0x85
-const CMD_IMAGE_RECEIVED = 0xD3; // ushort offset, byte last line
+const CMD_IMAGE_RECEIVED = 0xd3; // ushort offset, byte last line
 
 // Niimbot D11 has 203 DPI (https://www.niimbotlabel.com/products/niimbot-d11-label-maker)
 function niimbotMmToPx(x) {
-    return Math.ceil(x / 25.4 * 203);
+  return Math.ceil((x / 25.4) * 203);
 }
 
 function niimbotPxToMM(x) {
-  return Math.floor(x / 203 * 25.4);
+  return Math.floor((x / 203) * 25.4);
 }
 
 async function niimbotGetRFID() {
-  return niimbotTransceivePacket(CMD_GET_RFID, [1]).then(data => {
-    if (data[0] == 0)
-      return { 'rfid': false };
+  return niimbotTransceivePacket(CMD_GET_RFID, [1]).then((data) => {
+    if (data[0] == 0) return { rfid: false };
 
     const uuid = data.splice(0, 8);
     const barcode = data.splice(0, data.shift());
@@ -50,78 +49,78 @@ async function niimbotGetRFID() {
     usedLen += data.shift();
     let type = data.shift();
     return {
-      'rfid': true,
-      'uuid': arrayToHexString(uuid),
-      'barcode': intArrayToString(barcode),
-      'serial': intArrayToString(serial),
-      'total_len': totalLen,
-      'used_len': usedLen,
-      'type': type
+      rfid: true,
+      uuid: arrayToHexString(uuid),
+      barcode: intArrayToString(barcode),
+      serial: intArrayToString(serial),
+      total_len: totalLen,
+      used_len: usedLen,
+      type: type,
     };
   });
 }
 
 async function niimbotGetInfoForType(type) {
-  return niimbotTransceivePacket(CMD_GET_INFO, [type], type).then(data => {
+  return niimbotTransceivePacket(CMD_GET_INFO, [type], type).then((data) => {
     switch (type) {
-    case INFO_DEVICESERIAL:
-      return arrayToHexString(data);
+      case INFO_DEVICESERIAL:
+        return arrayToHexString(data);
 
-    // case InfoEnum.SOFTVERSION:
-    //     return _packet_to_int(packet) / 100
-    // case InfoEnum.HARDVERSION:
-    //     return _packet_to_int(packet) / 100
-    // case _:
-    //     return _packet_to_int(packet)
+      // case InfoEnum.SOFTVERSION:
+      //     return _packet_to_int(packet) / 100
+      // case InfoEnum.HARDVERSION:
+      //     return _packet_to_int(packet) / 100
+      // case _:
+      //     return _packet_to_int(packet)
 
-    default:
-      return arrayToHexString(data);
+      default:
+        return arrayToHexString(data);
     }
   });
 }
 
 async function niimbotGetInfo() {
   let sw = niimbotGetInfoForType(INFO_SOFTVERSION);
-  let hw = sw.then(_ => niimbotGetInfoForType(INFO_HARDVERSION));
-  let sn = hw.then(_ => niimbotGetInfoForType(INFO_DEVICESERIAL));
+  let hw = sw.then((_) => niimbotGetInfoForType(INFO_HARDVERSION));
+  let sn = hw.then((_) => niimbotGetInfoForType(INFO_DEVICESERIAL));
 
-  return Promise.all([sw, hw, sn]).then(values => {
+  return Promise.all([sw, hw, sn]).then((values) => {
     return {
-      "SW": values[0],
-      "HW": values[1],
-      "S/N": values[2]
+      SW: values[0],
+      HW: values[1],
+      "S/N": values[2],
     };
   });
 }
 
 async function niimbotGetHeartbeat() {
-  return niimbotTransceivePacket(CMD_HEARTBEAT, [1]).then(data => {
+  return niimbotTransceivePacket(CMD_HEARTBEAT, [1]).then((data) => {
     switch (data.length) {
       case 20:
         return {
-          'paperstate': data.at(-2),
-          'rfidreadstate': data.at(-1)
+          paperstate: data.at(-2),
+          rfidreadstate: data.at(-1),
         };
 
       case 13:
       case 19:
         return {
-          'closingstate': data.at(-4),
-          'powerlevel': data.at(-3),
-          'paperstate': data.at(-2),
-          'rfidreadstate': data.at(-1)
+          closingstate: data.at(-4),
+          powerlevel: data.at(-3),
+          paperstate: data.at(-2),
+          rfidreadstate: data.at(-1),
         };
 
       case 10:
         return {
-          'closingstate': data.at(-2),
-          'powerlevel': data.at(-1),
-          'rfidreadstate': data.at(-2)
+          closingstate: data.at(-2),
+          powerlevel: data.at(-1),
+          rfidreadstate: data.at(-2),
         };
 
       case 9:
         return {
-          'closingstate': data.at(-1)
+          closingstate: data.at(-1),
         };
 
       default:
@@ -132,32 +131,42 @@ async function niimbotGetHeartbeat() {
 
 async function niimbotSetLabelType(n) {
   console.assert(1 <= n && n <= 3);
-  return niimbotTransceivePacket(CMD_SET_LABEL_TYPE, [n], 16).then(data => data[0]);
+  return niimbotTransceivePacket(CMD_SET_LABEL_TYPE, [n], 16).then(
+    (data) => data[0]
+  );
 }
 
 async function niimbotSetLabelDensity(n) {
   console.assert(1 <= n && n <= 3);
-  return niimbotTransceivePacket(CMD_SET_LABEL_DENSITY, [n], 16).then(data => data[0]);
+  return niimbotTransceivePacket(CMD_SET_LABEL_DENSITY, [n], 16).then(
+    (data) => data[0]
+  );
 }
 
 async function niimbotStartPrint() {
-  return niimbotTransceivePacket(CMD_START_PRINT, [1]).then(data => data[0]);
+  return niimbotTransceivePacket(CMD_START_PRINT, [1]).then((data) => data[0]);
 }
 
 async function niimbotEndPrint() {
-  return niimbotTransceivePacket(CMD_END_PRINT, [1]).then(data => data[0]);
+  return niimbotTransceivePacket(CMD_END_PRINT, [1]).then((data) => data[0]);
 }
 
 async function niimbotStartPagePrint() {
-  return niimbotTransceivePacket(CMD_START_PAGE_PRINT, [1]).then(data => data[0]);
+  return niimbotTransceivePacket(CMD_START_PAGE_PRINT, [1]).then(
+    (data) => data[0]
+  );
 }
 
 async function niimbotEndPagePrint() {
-  return niimbotTransceivePacket(CMD_END_PAGE_PRINT, [1]).then(data => data[0]);
+  return niimbotTransceivePacket(CMD_END_PAGE_PRINT, [1]).then(
+    (data) => data[0]
+  );
 }
 
 async function niimbotAllowPrintClear() {
-  return niimbotTransceivePacket(CMD_ALLOW_PRINT_CLEAR, [1], 16).then(data => data[0]);
+  return niimbotTransceivePacket(CMD_ALLOW_PRINT_CLEAR, [1], 16).then(
+    (data) => data[0]
+  );
 }
 
 async function niimbotSetLabelDimensions(w, h) {
@@ -165,20 +174,22 @@ async function niimbotSetLabelDimensions(w, h) {
   console.assert(1 <= h && h <= niimbotMmToPx(75));
   return niimbotTransceivePacket(CMD_SET_DIMENSION, [
     ...ushortToByteArray(h),
-    ...ushortToByteArray(w)
-  ]).then(data => data[0]);
+    ...ushortToByteArray(w),
+  ]).then((data) => data[0]);
 }
 
 async function niimbotSetPrintQuality(n) {
-  return niimbotTransceivePacket(CMD_SET_QUANTITY, ushortToByteArray(n)).then(data => data[0]);
+  return niimbotTransceivePacket(CMD_SET_QUANTITY, ushortToByteArray(n)).then(
+    (data) => data[0]
+  );
 }
 
 async function niimbotGetPrintStatus(n) {
-  return niimbotTransceivePacket(CMD_GET_PRINT_STATUS, [1], 16).then(data => {
+  return niimbotTransceivePacket(CMD_GET_PRINT_STATUS, [1], 16).then((data) => {
     return {
-      "page": data[0] * 256 + data[1],
-      "progress1": data[2],
-      "progress2": data[3]
+      page: data[0] * 256 + data[1],
+      progress1: data[2],
+      progress2: data[3],
     };
   });
 }
@@ -192,9 +203,9 @@ function niimbotPacketClear(y, n = 1) {
 }
 
 function niimbotPacketImageData(y, w, data, n = 1) {
-  if (w != 96) {
-    throw "error: width has to be 96";
-  }
+  // if (w != 96) {
+  //   throw "error: width has to be 96";
+  // }
 
   let buffer = [];
   buffer.push(...ushortToByteArray(y));
@@ -204,9 +215,7 @@ function niimbotPacketImageData(y, w, data, n = 1) {
   // add a list of bytes count
   for (let x = 0; x < w; x += 32) {
     const start_indexes = indexes.length;
-    for (let b = 0; b < 32; b++)
-      if (data[x + b])
-        indexes.push(x + b);
+    for (let b = 0; b < 32; b++) if (data[x + b]) indexes.push(x + b);
     buffer.push(indexes.length - start_indexes);
   }
   buffer.push(n);
@@ -216,20 +225,18 @@ function niimbotPacketImageData(y, w, data, n = 1) {
   }
 
   // for small buffers, prefer to send indexes instead of bitmaps
-  if (indexes.length*2 < w/8) {
+  if (indexes.length * 2 < w / 8) {
     for (const index of indexes) {
       buffer.push(...ushortToByteArray(index));
     }
-  
+
     return niimbotToPacket(CMD_IMAGE_SET, buffer);
   }
 
   // encode bool map to bits map
   for (let x = 0; x < w; x += 8) {
     let bits = 0;
-    for (let b = 0; b < 8; b++)
-      if (data[x + b])
-        bits |= 1<<(7-b);
+    for (let b = 0; b < 8; b++) if (data[x + b]) bits |= 1 << (7 - b);
     buffer.push(bits);
   }
 
@@ -244,7 +251,7 @@ async function niimbotSendImage(w, h, imageData, sliceSize = 200) {
 
     let packet = [];
     let yNext = ySlice;
-    var dataNext = imageData.slice(ySlice * w, (ySlice+1) * w);
+    var dataNext = imageData.slice(ySlice * w, (ySlice + 1) * w);
     var dataStringNext = dataNext.toString();
 
     while (yNext < hSlice) {
@@ -254,16 +261,17 @@ async function niimbotSendImage(w, h, imageData, sliceSize = 200) {
 
       // find how many the same lines are being send
       while (++yNext < hSlice) {
-        dataNext = imageData.slice(yNext * w, (yNext+1) * w);
+        dataNext = imageData.slice(yNext * w, (yNext + 1) * w);
         dataStringNext = dataNext.toString();
-        if (dataString != dataStringNext)
-          break;
+        if (dataString != dataStringNext) break;
       }
 
       packet.push(...niimbotPacketImageData(y, w, data, yNext - y));
     }
 
-    promise = promise.then(_ => niimbotTransceiveRawData(packet, CMD_IMAGE_RECEIVED));
+    promise = promise.then((_) =>
+      niimbotTransceiveRawData(packet, CMD_IMAGE_RECEIVED)
+    );
   }
 
   return promise;
@@ -271,13 +279,12 @@ async function niimbotSendImage(w, h, imageData, sliceSize = 200) {
 
 async function niimbotWaitForPrintComplete(q) {
   return new Promise((resolve, reject) => {
-    let process = function(status) {
+    let process = function (status) {
       log("PRINT", status);
 
-      if (status["page"] == q)
-        return resolve();
+      if (status["page"] == q) return resolve();
 
-      setTimeout(function() {
+      setTimeout(function () {
         niimbotGetPrintStatus().then(process);
       }, 0.1);
     };
@@ -287,18 +294,21 @@ async function niimbotWaitForPrintComplete(q) {
 }
 
 async function niimbotPrintImage(w, h, data, q = 1, type = 1, density = 2) {
-  log("PRINT", `Printing image: ${w}x${h}, ${q}q, ${type} type, ${density} density`);
+  log(
+    "PRINT",
+    `Printing image: ${w}x${h}, ${q}q, ${type} type, ${density} density`
+  );
   return niimbotSetLabelType(type)
-    .then(_ => niimbotSetLabelType(type)) // 1-3
-    .then(_ => niimbotSetLabelDensity(density)) // 1-3
-    .then(_ => niimbotStartPrint())
-    .then(_ => niimbotAllowPrintClear())
-    .then(_ => niimbotStartPagePrint())
-    .then(_ => niimbotSetLabelDimensions(w, h))
-    .then(_ => niimbotSetPrintQuality(q))
-    .then(_ => niimbotSendImage(w, h, data))
-    .then(_ => niimbotEndPagePrint())
-    .then(_ => niimbotWaitForPrintComplete(q))
-    .then(_ => niimbotEndPrint())
-    .then(_ => `Printed ${w}x${h}, ${q}q, ${type} type, ${density} density`);
+    .then((_) => niimbotSetLabelType(type)) // 1-3
+    .then((_) => niimbotSetLabelDensity(density)) // 1-3
+    .then((_) => niimbotStartPrint())
+    .then((_) => niimbotAllowPrintClear())
+    .then((_) => niimbotStartPagePrint())
+    .then((_) => niimbotSetLabelDimensions(w, h))
+    .then((_) => niimbotSetPrintQuality(q))
+    .then((_) => niimbotSendImage(w, h, data))
+    .then((_) => niimbotEndPagePrint())
+    .then((_) => niimbotWaitForPrintComplete(q))
+    .then((_) => niimbotEndPrint())
+    .then((_) => `Printed ${w}x${h}, ${q}q, ${type} type, ${density} density`);
 }

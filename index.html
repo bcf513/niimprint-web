@@ -62,7 +62,8 @@
       <canvas id="canvas" width="0" height="0" class="canvas"></canvas>
     </div>
     <input type="text" id="nomePaciente" value="Bruno Colaço" />
-    <div id="qrcodeholder" style="display: none"></div>
+    <div id="qrcodeholder"></div>
+    <!-- <div id="qrcodeholder" style="display: none"></div> -->
     <hr />
     <h3>
       Log:
@@ -331,9 +332,8 @@
 
           const nomePaciente = document.getElementById("nomePaciente").value;
 
-          addTextToCanvas(canvas, nomePaciente, 5, 85);
-
           addQRCodeToCanvas("https://exemplo.com");
+          addTextToCanvas(canvas, nomePaciente, 5, 85);
 
           setTimeout(function () {
             let [data, width, height] = canvasGetImageData(

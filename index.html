@@ -315,7 +315,7 @@
           img.onload = function () {
             context.drawImage(img, 5, 5, size, size);
           };
-        }, 50);
+        }, 10);
       }
       document
         .getElementById("save_canvas")
@@ -345,10 +345,12 @@
           );
 
           console.log({ width, height, data, labelType });
-          setAsyncResponse(
-            niimbotPrintImage(width, height, data, 1, labelType),
-            "PRINT"
-          );
+          setTimeout(function () {
+            setAsyncResponse(
+              niimbotPrintImage(width, height, data, 1, labelType),
+              "PRINT"
+            );
+          }, 50);
         });
       document
         .getElementById("clear_log")

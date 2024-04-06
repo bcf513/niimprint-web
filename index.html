@@ -360,8 +360,8 @@
 
       document.addEventListener("DOMContentLoaded", (_) => {
         const canvas = document.getElementById("canvas");
-        // addQRCodeToCanvas("https://exemplo.com");
-        // addTextToCanvas(canvas, "nomePaciente", 5, 85);
+        addQRCodeToCanvas("https://exemplo.com");
+        addTextToCanvas(canvas, "nomePaciente", 5, 85);
         var dataURL = localStorage.getItem("canvas");
         if (!dataURL) return;
 

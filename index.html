@@ -335,17 +335,17 @@
 
           addQRCodeToCanvas("https://exemplo.com");
 
-          let [data, width, height] = canvasGetImageData(
-            canvas,
-            0,
-            0,
-            canvas.width,
-            canvas.height,
-            canvasFlipXY
-          );
-
-          console.log({ width, height, data, labelType });
           setTimeout(function () {
+            let [data, width, height] = canvasGetImageData(
+              canvas,
+              0,
+              0,
+              canvas.width,
+              canvas.height,
+              canvasFlipXY
+            );
+
+            console.log({ width, height, data, labelType });
             setAsyncResponse(
               niimbotPrintImage(width, height, data, 1, labelType),
               "PRINT"

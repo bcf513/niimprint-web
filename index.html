@@ -14,9 +14,9 @@
         border: 2px solid black;
       }
     </style>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
   </head>
   <body>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator/qrcode.js"></script>
     <button onclick="fullscreen()">FULLSCREEN!!!!</button>
     <p>
       <button id="connect">Connect</button>
@@ -37,10 +37,10 @@
       Canvas:
       <label id="canvas_label"></label>
       <select id="canvas_size">
-        <option value="12x22x1">12x22</option>
+        <option value="12x22x1" selected>12x22</option>
         <option value="14x22x1">14x22</option>
         <option value="12x30x1">12x30</option>
-        <option value="15x30x1" selected>15x30</option>
+        <option value="15x30x1">15x30</option>
         <option value="12x50x1">12x50</option>
         <option value="15x50x1">15x50</option>
       </select>
@@ -62,6 +62,7 @@
       <canvas id="canvas" width="0" height="0" class="canvas"></canvas>
     </div>
     <input type="text" id="nomePaciente" value="Bruno Colaço" />
+    <div id="qrcodeholder" style="display: none"></div>
     <hr />
     <h3>
       Log:
@@ -118,15 +119,15 @@
       }
 
       function generateQRCode(text, size = 256) {
-        const qr = new QRCode(0, QRCode.ErrorCorrectLevel.H);
-        qr.addData(text);
-        qr.make();
-        const canvas = document.createElement("canvas");
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext("2d");
-        qr.renderTo2dContext(ctx, size, size);
-        return canvas;
+        // const qr = new QRCode(0, QRCode.ErrorCorrectLevel.H);
+        // qr.addData(text);
+        // qr.make();
+        // const canvas = document.createElement("canvas");
+        // canvas.width = size;
+        // canvas.height = size;
+        // const ctx = canvas.getContext("2d");
+        // qr.renderTo2dContext(ctx, size, size);
+        // return canvas;
       }
 
       function updateConnected(deviceName = null) {
@@ -293,11 +294,28 @@
         context.fillText(text, x, y);
       }
 
-      function addQRCodeToCanvas(qrText) {
-        const qrCodeCanvas = generateQRCode(qrText, 256);
+      function addQRCodeToCanvas(qrText, size = 64) {
+        const canvas = document.getElementById("canvas");
+        const context = canvas.getContext("2d");
 
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(qrCodeCanvas, 50, 50); // Exemplo de coordenadas (50, 50)
+        const qrCode = new QRCode(document.getElementById("qrcodeholder"), {
+          text: qrText, // Texto que será codificado no QR Code
+          width: size, // Largura do QR Code
+          height: size, // Altura do QR Code
+          colorDark: "#000000", // Cor dos pontos do QR Code
+          colorLight: "#ffffff", // Cor de fundo do QR Code
+          // correctLevel: QRCode.CorrectLevel.HIGH, // Nível de correção de erro
+        });
+
+        const imageQRCode = document.querySelector("#qrcodeholder img");
+        setTimeout(function () {
+          var img = new Image();
+          img.src = imageQRCode.src;
+          console.log({ img });
+          img.onload = function () {
+            context.drawImage(img, 5, 5, size, size);
+          };
+        }, 50);
       }
       document
         .getElementById("save_canvas")
@@ -313,7 +331,7 @@
 
           const nomePaciente = document.getElementById("nomePaciente").value;
 
-          addTextToCanvas(canvas, nomePaciente, 10, 20);
+          addTextToCanvas(canvas, nomePaciente, 5, 85);
 
           addQRCodeToCanvas("https://exemplo.com");
 
@@ -339,13 +357,15 @@
         });
 
       document.addEventListener("DOMContentLoaded", (_) => {
+        const canvas = document.getElementById("canvas");
+        // addQRCodeToCanvas("https://exemplo.com");
+        // addTextToCanvas(canvas, "nomePaciente", 5, 85);
         var dataURL = localStorage.getItem("canvas");
         if (!dataURL) return;
 
         var img = new Image();
         img.src = dataURL;
         img.onload = function () {
-          const canvas = document.getElementById("canvas");
           canvas.width = img.width;
           canvas.height = img.height;
           const context = canvas.getContext("2d");
